@@ -1,0 +1,61 @@
+name: threads-bot
+
+# 15분마다 깨어나 예약 게시물을 올리고 새 답글에 답한다.
+# GitHub 크론은 부하에 따라 지연될 수 있다. 정확히 15분 간격이 아니라
+# "대략 15분마다"로 보는 게 맞다.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "발행하지 않고 초안만 출력"
+        type: boolean
+        default: false
+
+concurrency:
+  # 앞 실행이 끝나기 전에 다음 실행이 겹치면 같은 답글에 두 번 답할 수 있다.
+  group: threads-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install --quiet anthropic
+
+      - name: Run bot
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+        run: |
+          python3 bot/agent.py ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Commit state
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if git diff --quiet -- bot/state.json; then
+            echo "변경 없음"
+            exit 0
+          fi
+          git config user.name "threads-bot"
+          git config user.email "threads-bot@users.noreply.github.com"
+          git add bot/state.json
+          git commit -m "chore(bot): 상태 갱신"
+          # 다른 실행이 먼저 커밋했을 수 있다. rebase 후 재시도.
+          for i in 1 2 3; do
+            git pull --rebase --autostash && git push && exit 0
+            sleep 5
+          done
+          exit 1

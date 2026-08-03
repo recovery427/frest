@@ -58,6 +58,9 @@ Claude(AI)는 혼자 돈을 못 번다. 계좌도 없고, 계약도 못 맺고, 
 
 | 파일 | 내용 |
 |---|---|
+| [`bot/README.md`](bot/README.md) | **스레드 자동 운영 봇 세팅** — 2주간 사람 없이 도는 구조 |
+| [`product/manuscript.md`](product/manuscript.md) | 전자책 원고 (판매 상품) |
+| [`product/latpeed-listing.md`](product/latpeed-listing.md) | 래피드 상품 등록 문구 |
 | [`plan/72h-plan.md`](plan/72h-plan.md) | 시간대별 실행 체크리스트 (H+0 ~ H+72) |
 | [`plan/unit-economics.md`](plan/unit-economics.md) | 가격·원가·퍼널 계산, 100만원 도달 시나리오 3안 |
 | [`sales/offer.md`](sales/offer.md) | 패키지 3종 정의, 포함/불포함, 납기, 수정 규정 |
