@@ -31,7 +31,8 @@
 | 클립 | 내용 | job_id | 링크 |
 |---|---|---|---|
 | 1 · 오프닝 | 시선 들어 카메라로, 미세한 푸시인 | `1a7d1289-ec40-464b-b286-cdfc490e8355` | [mp4](https://d8j0ntlcm91z4.cloudfront.net/user_3FeRCU01dmvawfbUDKnPQzA1cdy/hf_20260803_042640_1a7d1289-ec40-464b-b286-cdfc490e8355.mp4) |
-| 2 · 사용 | 립 틴트 바르고 입술 다물기 | `6f8c3477-25f4-4f93-b5a0-3d46d42cf30d` | [mp4](https://d8j0ntlcm91z4.cloudfront.net/user_3FeRCU01dmvawfbUDKnPQzA1cdy/hf_20260803_042645_6f8c3477-25f4-4f93-b5a0-3d46d42cf30d.mp4) |
+| 2 · 사용 ~~(폐기)~~ | ~~립 틴트 바르고 입술 다물기~~ — 뚜껑을 열지 않고 바르는 결과가 나와 폐기 | `6f8c3477-25f4-4f93-b5a0-3d46d42cf30d` | [mp4](https://d8j0ntlcm91z4.cloudfront.net/user_3FeRCU01dmvawfbUDKnPQzA1cdy/hf_20260803_042645_6f8c3477-25f4-4f93-b5a0-3d46d42cf30d.mp4) |
+| 2 · 사용 (재생성) | 뚜껑을 돌려 빼고 → 바르고 → 입술 다물기 | `e20fb6c1-06c7-4464-8def-28508fb14807` | [mp4](https://d8j0ntlcm91z4.cloudfront.net/user_3FeRCU01dmvawfbUDKnPQzA1cdy/hf_20260803_045119_e20fb6c1-06c7-4464-8def-28508fb14807.mp4) |
 | 3 · 결과 | 고개 돌리며 립 광택 드러남 | `59034d8c-b2d0-430b-8be6-be388db7a497` | [mp4](https://d8j0ntlcm91z4.cloudfront.net/user_3FeRCU01dmvawfbUDKnPQzA1cdy/hf_20260803_042648_59034d8c-b2d0-430b-8be6-be388db7a497.mp4) |
 | 4 · 히어로 | 제품 회전 + 매크로 푸시 | `7b73d755-c5c0-4fcc-8fdc-4da70a1ba1a0` | [mp4](https://d8j0ntlcm91z4.cloudfront.net/user_3FeRCU01dmvawfbUDKnPQzA1cdy/hf_20260803_042652_7b73d755-c5c0-4fcc-8fdc-4da70a1ba1a0.mp4) |
 
