@@ -1,0 +1,8 @@
+name = "threads-webhook"
+main = "worker.js"
+compatibility_date = "2026-08-01"
+
+# 시크릿은 이 파일에 쓰지 않는다. wrangler secret put 으로 넣는다.
+#   wrangler secret put THREADS_APP_SECRET   # Meta 앱 대시보드의 App Secret
+#   wrangler secret put VERIFY_TOKEN         # 아무 랜덤 문자열. Meta 등록 때 같은 값 입력
+#   wrangler secret put GITHUB_TOKEN         # repo 스코프 PAT

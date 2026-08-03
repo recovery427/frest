@@ -1,9 +1,16 @@
 name: threads-bot
 
-# 15분마다 깨어나 예약 게시물을 올리고 새 답글에 답한다.
-# GitHub 크론은 부하에 따라 지연될 수 있다. 정확히 15분 간격이 아니라
-# "대략 15분마다"로 보는 게 맞다.
+# 세 가지 방식으로 깨어난다.
+#
+#   repository_dispatch — 답글이 달리는 즉시 (웹훅 릴레이가 호출). 주 경로.
+#   schedule           — 15분마다. 예약 게시물 발행 + 웹훅이 유실됐을 때의 안전망.
+#   workflow_dispatch  — 수동 실행 / dry-run
+#
+# 웹훅만 믿으면 안 된다. Meta가 재시도에 실패하면 이벤트가 그냥 사라진다.
+# 크론이 그걸 주워담는다.
 on:
+  repository_dispatch:
+    types: [threads-reply]
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
@@ -39,8 +46,11 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+        # 웹훅으로 깨어난 실행은 답글만 처리한다. 예약 게시는 크론 몫이다.
         run: |
-          python3 bot/agent.py ${{ inputs.dry_run && '--dry-run' || '' }}
+          python3 bot/agent.py \
+            ${{ github.event_name == 'repository_dispatch' && '--replies-only' || '' }} \
+            ${{ inputs.dry_run && '--dry-run' || '' }}
 
       - name: Commit state
         if: ${{ !inputs.dry_run }}

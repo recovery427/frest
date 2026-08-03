@@ -8,20 +8,37 @@ Claude Code 세션은 컨테이너가 사라지면 끝난다. 2주를 버틸 수
 그래서 봇은 **GitHub Actions**에서 돈다. 저장소가 살아 있는 한 계속 깨어난다.
 
 ```
-GitHub Actions (15분마다)
-   │
-   ├─ 예약 큐에서 시간 된 게시물 발행       → Threads API
-   │
-   └─ 내 게시물의 새 답글 조회             → Threads API
-        └─ Claude API로 답글 초안          → claude-opus-5
-             └─ 답글 발행                  → Threads API
+[즉시 경로]  답글 달림 → Meta 웹훅 → Cloudflare Worker → repository_dispatch
+                                                              ↓
+[주기 경로]  크론 15분 ─────────────────────────────→ GitHub Actions
+                                                              │
+                          ┌───────────────────────────────────┤
+                          ↓                                   ↓
+              예약 큐에서 시간 된 글 발행          내 글의 새 답글 조회
+                    (크론만)                              ↓
+                                              Claude로 답글 초안 (opus-5)
+                                                          ↓
+                                                      답글 발행
 
    상태(답한 ID)는 bot/state.json에 커밋 → 중복 답글 방지
 ```
 
-**분 단위 소통은 실제로는 15분 단위다.** GitHub 크론은 최소 5분이고 부하에 따라 지연된다.
-더 촘촘하게 하려면 크론을 `*/5`로 바꾸면 되지만, 비공개 저장소는 월 2,000분 무료라
-금방 초과한다. 공개 저장소면 무제한이다.
+### 반응 속도 — 두 경로를 같이 쓴다
+
+**웹훅이 주 경로다.** Meta가 답글이 달리는 순간 쏴주므로 반응이 **초 단위**다.
+폴링 호출이 0이라 API 한도도 안 먹는다. 세팅은 6번 항목.
+
+**크론은 안전망이다.** 웹훅은 유실될 수 있다 — Meta가 재시도에 실패하면 이벤트가
+그냥 사라지고, 워커가 죽어 있어도 마찬가지다. 15분 크론이 그걸 주워담는다.
+예약 게시물 발행도 크론이 맡는다.
+
+웹훅 없이 크론만 쓰면 **최선 15분, 최악 30분**이다 (GitHub 크론은 최소 5분이고
+부하 때 지연된다). 웹훅 세팅이 부담스러우면 크론만으로도 돌아가지만,
+"1분 안에 답글"은 웹훅 없이는 안 된다.
+
+> 참고로 유튜브 영상에서 1분마다 댓글을 확인하던 건 웹훅이 아니라 **PC를 켜두고
+> 상주 프로세스를 돌린 것**이다. `while True: 확인(); 60초 대기`. 간단하지만
+> PC가 꺼지면 끝나고, 답글 3개 받으려고 하루 1,440번 폴링한다. 웹훅이 낫다.
 
 ---
 
@@ -84,6 +101,48 @@ python3 bot/agent.py --dry-run
 
 `.github/workflows/threads-bot.yml`이 머지되면 자동으로 돈다.
 멈추려면 Actions 탭에서 워크플로를 Disable 한다.
+
+여기까지만 해도 15분 주기로 돌아간다. 초 단위 반응이 필요하면 6번으로.
+
+---
+
+## 6. 웹훅 붙이기 (선택 — 초 단위 반응)
+
+`bot/webhook/` 에 Cloudflare Worker가 있다. 20줄짜리 중계기고, 하는 일은
+서명 검증과 GitHub 호출뿐이다. 봇 로직은 전부 저장소에 남는다.
+
+Cloudflare Workers 무료 티어(하루 10만 요청)로 충분하다. 비용 0원.
+
+```bash
+npm i -g wrangler
+cd bot/webhook
+wrangler login
+
+# 시크릿 3개
+wrangler secret put THREADS_APP_SECRET   # Meta 앱 대시보드 → 기본 설정 → App Secret
+wrangler secret put VERIFY_TOKEN         # 아무 랜덤 문자열 (직접 정하고 기억해둘 것)
+wrangler secret put GITHUB_TOKEN         # GitHub PAT, repo 스코프
+
+wrangler deploy
+# → https://threads-webhook.<계정>.workers.dev 주소가 나온다
+```
+
+Meta 앱 대시보드에서 등록한다.
+
+1. Threads API → **웹훅** 메뉴
+2. 콜백 URL: 위에서 나온 워커 주소
+3. 인증 토큰: `VERIFY_TOKEN`에 넣은 것과 **똑같은 값**
+4. 확인 및 저장 → Meta가 GET으로 한 번 찔러서 검증한다. 여기서 실패하면
+   토큰이 다르거나 워커 배포가 안 된 것이다
+5. 필드 구독: **`replies`**, **`mentions`**
+
+동작 확인: 본인 계정으로 자기 글에 답글을 달아본다. 몇 초 안에 Actions 탭에
+`repository_dispatch` 실행이 뜨면 성공이다. `wrangler tail`로 워커 로그도 볼 수 있다.
+
+> 이 워커도 실제 Meta 트래픽으로 검증하지 못했다. 서명 검증 방식(`X-Hub-Signature-256`,
+> HMAC-SHA256, 원문 바이트 기준)은 Meta 공통 규격을 따랐지만, Threads 페이로드의
+> 필드명(`replies` / `mentions`)은 실물로 확인이 필요하다. 서명이 맞는데 봇이 안 깨어나면
+> `wrangler tail` 로그에서 실제 `field` 값을 보고 `worker.js`의 `hasReply` 조건을 고치면 된다.
 
 ---
 
