@@ -1,0 +1,502 @@
+<title>frest — 제품 사진 1장으로 만드는 AI 광고 숏폼</title>
+
+<style>
+  :root {
+    --paper: #EDEDE7;
+    --paper-2: #E4E4DD;
+    --ink: #17181A;
+    --ink-2: #5A5D60;
+    --ink-3: #86888A;
+    --rule: #C8C9C1;
+    --rule-soft: #D9DAD2;
+    --accent: #7C3247;
+    --accent-soft: #B98A99;
+
+    --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+            'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas,
+            'Apple SD Gothic Neo', monospace;
+
+    --col: 42rem;
+    --step--1: 0.8125rem;
+    --step-0: 1rem;
+    --step-1: 1.1875rem;
+    --step-2: 1.5rem;
+    --step-3: 2.125rem;
+    --step-4: clamp(2.5rem, 7vw, 3.75rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #16171A;
+      --paper-2: #1D1F23;
+      --ink: #E9E7E3;
+      --ink-2: #9C9E9F;
+      --ink-3: #74767A;
+      --rule: #2F3237;
+      --rule-soft: #26282C;
+      --accent: #D2798F;
+      --accent-soft: #6E4451;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #16171A;
+    --paper-2: #1D1F23;
+    --ink: #E9E7E3;
+    --ink-2: #9C9E9F;
+    --ink-3: #74767A;
+    --rule: #2F3237;
+    --rule-soft: #26282C;
+    --accent: #D2798F;
+    --accent-soft: #6E4451;
+  }
+  :root[data-theme="light"] {
+    --paper: #EDEDE7;
+    --paper-2: #E4E4DD;
+    --ink: #17181A;
+    --ink-2: #5A5D60;
+    --ink-3: #86888A;
+    --rule: #C8C9C1;
+    --rule-soft: #D9DAD2;
+    --accent: #7C3247;
+    --accent-soft: #B98A99;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+
+  .wrap {
+    max-width: var(--col);
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  /* ── 상단 메타 바 ─────────────────────────────── */
+  .metabar {
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .metabar .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    justify-content: space-between;
+    padding-block: 0.6rem;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .metabar b { color: var(--ink-2); font-weight: 500; }
+
+  /* ── 히어로 ──────────────────────────────────── */
+  .hero { padding-block: 4.5rem 3rem; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+  }
+  h1 {
+    font-size: var(--step-4);
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    text-wrap: balance;
+    margin-bottom: 1.25rem;
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .lede {
+    font-size: var(--step-1);
+    color: var(--ink-2);
+    max-width: 34rem;
+  }
+
+  /* ── 비교 차트 (막대 길이 = 실제 소요 시간) ───── */
+  .compare {
+    margin-block: 3rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.75rem;
+  }
+  .cmp-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .cmp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .cmp-head strong { color: var(--ink); font-weight: 600; }
+  .cmp-track {
+    height: 0.5rem;
+    background: var(--rule-soft);
+    overflow: hidden;
+  }
+  .cmp-fill {
+    height: 100%;
+    width: var(--w);
+    background: var(--accent-soft);
+    transform-origin: left;
+    animation: grow 1.1s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+  }
+  .cmp-row.mine .cmp-fill { background: var(--accent); }
+  .cmp-row.mine .cmp-head strong { color: var(--accent); }
+  .cmp-note {
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    font-family: var(--mono);
+  }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    .cmp-fill { animation: none; }
+  }
+
+  /* ── 섹션 ───────────────────────────────────── */
+  section { padding-block: 3.25rem; border-top: 1px solid var(--rule); }
+  .sec-label {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-size: var(--step-2);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-wrap: balance;
+  }
+  h3 { font-size: var(--step-1); font-weight: 650; letter-spacing: -0.01em; }
+  p + p { margin-top: 0.9rem; }
+  .muted { color: var(--ink-2); }
+
+  /* ── 작업 순서 (진짜 순서라 번호를 매긴다) ────── */
+  ol.steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    counter-reset: s;
+  }
+  ol.steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    gap: 1rem;
+    padding-block: 1.1rem;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: start;
+  }
+  ol.steps li:first-child { border-top: 1px solid var(--rule-soft); }
+  ol.steps li::before {
+    content: counter(s, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+    padding-top: 0.2rem;
+    font-variant-numeric: tabular-nums;
+  }
+  ol.steps p { color: var(--ink-2); font-size: var(--step--1); margin-top: 0.15rem; }
+
+  /* ── 가격표 ─────────────────────────────────── */
+  .tiers { display: flex; flex-direction: column; }
+  .tier {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem 1.5rem;
+    padding-block: 1.5rem;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: baseline;
+  }
+  .tier:first-child { border-top: 1px solid var(--rule); }
+  .tier.pick { background: var(--paper-2); padding-inline: 1.25rem; margin-inline: -1.25rem; }
+  .tier-name { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    padding: 0.15rem 0.45rem;
+  }
+  .price {
+    font-family: var(--mono);
+    font-size: var(--step-1);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: -0.02em;
+  }
+  .tier ul {
+    grid-column: 1 / -1;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    margin-top: 0.35rem;
+  }
+  .tier ul li::before { content: "— "; color: var(--ink-3); }
+
+  /* ── 포트폴리오 자리 ────────────────────────── */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+  }
+  .slot {
+    aspect-ratio: 9 / 16;
+    border: 1px dashed var(--rule);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+    padding: 0.75rem;
+    background: var(--paper-2);
+  }
+
+  /* ── 표 (포함/불포함) ──────────────────────── */
+  .split { display: grid; gap: 2rem; grid-template-columns: 1fr; }
+  @media (min-width: 34rem) { .split { grid-template-columns: 1fr 1fr; } }
+  .split h3 { margin-bottom: 0.75rem; font-size: var(--step-0); }
+  .split ul { list-style: none; font-size: var(--step--1); color: var(--ink-2); }
+  .split li { padding-block: 0.4rem; border-bottom: 1px solid var(--rule-soft); }
+
+  /* ── 문의 ───────────────────────────────────── */
+  .cta { padding-block: 3.5rem 4.5rem; }
+  .contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    font-family: var(--mono);
+    font-size: var(--step-0);
+  }
+  .contact div { display: flex; gap: 1rem; align-items: baseline; }
+  .contact span {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    min-width: 5.5rem;
+  }
+  .fill {
+    color: var(--accent);
+    border-bottom: 1px dashed var(--accent-soft);
+    padding-bottom: 0.1rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-block: 1.5rem 3rem;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    line-height: 1.9;
+  }
+  a { color: var(--accent); }
+  a:focus-visible, .fill:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+</style>
+
+<div class="metabar">
+  <div class="wrap">
+    <span><b>frest</b> — AI 광고영상 제작</span>
+    <span>제품 사진 <b>1장</b> · 납기 <b>24시간</b> · <b>150,000</b>원부터</span>
+  </div>
+</div>
+
+<main>
+  <header class="hero wrap">
+    <div class="eyebrow">촬영 없는 광고 소재</div>
+    <h1>제품 사진 한 장 주시면,<br><em>내일</em> 광고 영상을 드립니다.</h1>
+    <p class="lede">모델 섭외도, 스튜디오 대관도, 일정 조율도 없습니다. 누끼 이미지 1장이면 세로 숏폼 광고가 나옵니다.</p>
+
+    <div class="compare">
+      <div class="cmp-row">
+        <div class="cmp-head"><span>실사 촬영으로 숏폼 3편</span><strong>2~3주</strong></div>
+        <div class="cmp-track"><div class="cmp-fill" style="--w:100%"></div></div>
+      </div>
+      <div class="cmp-row mine">
+        <div class="cmp-head"><span>frest로 숏폼 3편</span><strong>48시간</strong></div>
+        <div class="cmp-track"><div class="cmp-fill" style="--w:11%"></div></div>
+      </div>
+      <p class="cmp-note">막대 길이는 실제 소요 시간 비율입니다.</p>
+    </div>
+  </header>
+
+  <section class="wrap">
+    <div class="sec-label">왜 이걸 쓰나</div>
+    <h2>광고는 결국 소재를 몇 개 돌려보느냐의 싸움입니다.</h2>
+    <p class="muted">한 편 잘 만드는 것보다 세 편 돌려보고 반응 좋은 쪽에 예산을 몰아주는 쪽이 이깁니다. 그런데 촬영으로 세 편을 만들려면 비용도 일정도 세 배가 듭니다.</p>
+    <p class="muted">그래서 소재가 하나로 고정되고, 그 하나가 안 먹히면 그대로 끝납니다. 이 구조를 바꾸려고 만든 서비스입니다.</p>
+    <div class="split" style="margin-top:2rem">
+      <div>
+        <h3>모델 리스크가 없습니다</h3>
+        <p class="muted" style="font-size:var(--step--1)">등장 인물은 전부 생성 이미지입니다. 초상권 분쟁도, 재계약도, 모델 논란도 없습니다.</p>
+      </div>
+      <div>
+        <h3>얼굴을 고정할 수 있습니다</h3>
+        <p class="muted" style="font-size:var(--step--1)">한 번 만든 모델은 다음 시즌에도 같은 얼굴로 씁니다. 브랜드 전속 모델이 생기는 셈입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-label">작업 순서</div>
+    <ol class="steps">
+      <li>
+        <div>
+          <h3>제품 이미지 전달</h3>
+          <p>배경이 투명하거나 단색인 누끼 이미지 1장. 없으면 30,000원에 만들어 드립니다.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>컨셉 협의</h3>
+          <p>10분이면 끝납니다. 제품 색감을 뽑아서 배경·조명 톤을 거기에 맞춥니다.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>이미지 시안 확인</h3>
+          <p>영상 작업 전에 정지 컷으로 먼저 방향을 확인합니다. 여기서 바꾸면 비용이 안 듭니다.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>영상 납품</h3>
+          <p>MP4 1080×1920, 자막·배경음 포함. 이미지 원본과 상업적 이용권을 함께 드립니다.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-label">결과물</div>
+    <h2>실제로 이렇게 나옵니다.</h2>
+    <div class="gallery" style="margin-top:1.5rem">
+      <div class="slot">데모 01<br>모델 단독</div>
+      <div class="slot">데모 02<br>제품 사용컷</div>
+      <div class="slot">데모 03<br>제품 단독</div>
+    </div>
+    <p class="cmp-note" style="margin-top:1rem">※ 이 자리에 생성한 데모 이미지를 넣으세요.</p>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-label">가격</div>
+    <div class="tiers">
+      <div class="tier">
+        <div class="tier-name"><h3>스타터</h3></div>
+        <div class="price">150,000원</div>
+        <ul>
+          <li>숏폼 1편 (15초)</li>
+          <li>이미지 3컷</li>
+          <li>납기 24시간</li>
+          <li>수정 1회</li>
+        </ul>
+      </div>
+      <div class="tier pick">
+        <div class="tier-name"><h3>스탠다드</h3><span class="badge">추천</span></div>
+        <div class="price">290,000원</div>
+        <ul>
+          <li>숏폼 3편 (훅 다르게)</li>
+          <li>이미지 6컷</li>
+          <li>후킹 문구 10안</li>
+          <li>1:1 리사이즈</li>
+          <li>납기 48시간</li>
+          <li>수정 2회</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="tier-name"><h3>브랜드 패키지</h3></div>
+        <div class="price">890,000원</div>
+        <ul>
+          <li>숏폼 10편</li>
+          <li>이미지 20컷</li>
+          <li>전속 AI 모델 생성</li>
+          <li>상세페이지 이미지 5컷</li>
+          <li>납기 5일</li>
+          <li>2주간 수정 무제한</li>
+        </ul>
+      </div>
+    </div>
+    <p class="cmp-note" style="margin-top:1rem">부가세 별도 · 선금 50% 입금 후 착수</p>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-label">범위</div>
+    <div class="split">
+      <div>
+        <h3>포함</h3>
+        <ul>
+          <li>기획·프롬프트 설계·생성</li>
+          <li>색보정·자막·배경음</li>
+          <li>MP4 1080p + JPG 원본</li>
+          <li>상업적 이용권 전부</li>
+        </ul>
+      </div>
+      <div>
+        <h3>불포함</h3>
+        <ul>
+          <li>실존 인물 모델 촬영</li>
+          <li>광고 계정 세팅·집행</li>
+          <li>제품 누끼 제작 (+30,000원)</li>
+          <li>화장품 표시광고 문구 검수</li>
+        </ul>
+      </div>
+    </div>
+    <p class="cmp-note" style="margin-top:1.5rem">효능·성분 표기의 적법성 확인 책임은 광고주에게 있습니다. 실존 인물의 얼굴을 사용한 제작은 진행하지 않습니다.</p>
+  </section>
+
+  <section class="wrap cta">
+    <div class="sec-label">문의</div>
+    <h2>제품 이미지 1장이면 시작합니다.</h2>
+    <p class="muted">어떤 제품이고 언제까지 필요하신지만 알려주세요. 구성 정리해서 견적으로 회신드리겠습니다.</p>
+    <div class="contact">
+      <div><span>인스타</span><span class="fill">@아이디를 넣으세요</span></div>
+      <div><span>이메일</span><span class="fill">주소를 넣으세요</span></div>
+      <div><span>제작 슬롯</span><span>이번 주 2자리</span></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  frest · AI 광고영상 제작<br>
+  본 페이지의 인물 이미지는 모두 AI로 생성된 것이며 실존 인물이 아닙니다.
+</footer>
