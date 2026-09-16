@@ -12,6 +12,10 @@
         "/opt/pw-browsers/chromium"
       ],
       "env": {}
+    },
+    "dropshot": {
+      "type": "http",
+      "url": "https://mcp.aistudio.dropshot.io/mcp"
     }
   }
 }
